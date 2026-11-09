@@ -113,5 +113,5 @@ jobs:
     steps:
       # No es fatal: hasta activar Pages (Settings > Pages > Source: GitHub Actions) el despliegue no puede funcionar.
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         continue-on-error: true
