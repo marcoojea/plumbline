@@ -10,15 +10,19 @@ Repo de demostración QA (Playwright + TypeScript, Newman, GitHub Actions). Obje
 - Suite API Restful-Booker con Playwright: 9 tests.
 - Colección Postman generada por código + runner Newman con informe HTML.
 - Mock local de Restful-Booker; `with-api.mjs` cae a él si la API pública no responde.
-- Workflow CI (e2e y api en paralelo, informes como artefactos, Pages solo si repo público).
+- Workflow CI (e2e y api en paralelo, informes como artefactos, despliegue en Pages).
 - README, LICENSE, CLAUDE.md.
 - CI verde en main, informes del artefacto revisados en local.
 - Revisión de seguridad y sanitización (historial reducido a un commit).
 
+## Publicación
+- Repo público: https://github.com/marcoojea/plumbline
+- Informes en vivo (GitHub Pages): https://marcoojea.github.io/plumbline/
+- Dependabot actualiza acciones y dependencias cada mes; sus PRs pasan el CI antes de fusionarse.
+
 ## Pendiente
-- PR #4 Dependabot (deploy-pages 5): fusionar tras activar Pages y comprobar el deploy.
-- Activar Pages (Settings > Pages > GitHub Actions).
 - Capturas del informe en el README (opcional).
+- Ideas futuras: pruebas de accesibilidad, rendimiento o contratos de API.
 
 ## Cómo verificar
 `npm ci && npx playwright install chromium && npm test`
