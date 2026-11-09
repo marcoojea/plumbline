@@ -12,3 +12,4 @@ Una línea por cambio. Leer antes de empezar para no duplicar trabajo. Formato: 
 - 2026-11-09 · main · Historial reducido a un commit limpio antes de publicar · repo
 - 2026-11-09 · main · Soporte de SLOWMO (env) y script test:headed para ver los tests E2E en navegador visible · `playwright.config.ts`, `package.json`
 - 2026-11-09 · docs/espanol · README completo en español (qué hace, por qué, stack, cómo arrancar, glosario); comentarios, títulos de tests y workflow traducidos · todo el repo
+- 2026-11-09 · docs/publicacion · Repo público, Pages activado y desplegando; fusionados deploy-pages 5 y upload-pages-artifact 5 · `EstadoActual.md`
