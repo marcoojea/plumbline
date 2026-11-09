@@ -1,0 +1,38 @@
+{
+  "name": "plumbline",
+  "version": "1.0.0",
+  "description": "Demostración de automatización QA: pruebas E2E con Playwright, pruebas de API (Playwright y Postman/Newman) y CI con GitHub Actions",
+  "scripts": {
+    "test": "npm run test:e2e && npm run test:api && npm run test:newman",
+    "test:e2e": "playwright test --project=e2e",
+    "test:smoke": "playwright test --project=e2e --grep @smoke",
+    "test:api": "node scripts/with-api.mjs playwright test --project=api",
+    "test:newman": "node scripts/with-api.mjs node scripts/run-newman.mjs",
+    "test:offline": "node scripts/with-api.mjs --mock playwright test --project=api && node scripts/with-api.mjs --mock node scripts/run-newman.mjs",
+    "report": "playwright show-report playwright-report/e2e",
+    "typecheck": "tsc --noEmit",
+    "report:api": "playwright show-report playwright-report/api",
+    "test:headed": "playwright test --project=e2e --headed --workers=1"
+  },
+  "keywords": [
+    "qa",
+    "playwright",
+    "typescript",
+    "newman",
+    "github-actions"
+  ],
+  "author": "Marco Ojea",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^26.6.6",
+    "newman": "^6.2.3",
+    "newman-reporter-htmlextra": "^1.23.1",
+    "typescript": "^7.0.2"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

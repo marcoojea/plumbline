@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1' # semanal: detecta si las webs de demo públicas cambian
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: E2E (Playwright, SauceDemo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: report-e2e
+          path: playwright-report/e2e
+          retention-days: 14
+
+  api:
+    name: API (Playwright + Newman, Restful-Booker)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # La ejecución semanal usa siempre la API real (sin simulador), así detecta cambios reales.
+      API_BASE_URL: ${{ github.event_name == 'schedule' && 'https://restful-booker.herokuapp.com' || '' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # with-api.mjs usa un simulador local si la API pública está caída, así una caída ajena no pone el CI en rojo.
+      - run: npm run test:api
+      - run: npm run test:newman
+        if: ${{ !cancelled() }}
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: report-api
+          path: |
+            playwright-report/api
+            reports/newman.html
+          retention-days: 14
+
+  report:
+    name: Generar sitio de informes
+    needs: [e2e, api]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v8
+        with:
+          name: report-e2e
+          path: playwright-report/e2e
+        continue-on-error: true
+      - uses: actions/download-artifact@v8
+        with:
+          name: report-api
+          path: .
+        continue-on-error: true
+      - run: node scripts/build-site.mjs
+      - uses: actions/upload-artifact@v7
+        with:
+          name: report-site
+          path: site
+          retention-days: 14
+      - uses: actions/upload-pages-artifact@v3
+        if: ${{ github.ref == 'refs/heads/main' && github.event.repository.private == false }}
+        with:
+          path: site
+
+  # GitHub Pages solo está disponible en repos públicos (plan gratuito): este trabajo se salta mientras el repo sea privado.
+  deploy:
+    name: Desplegar en GitHub Pages
+    needs: report
+    if: ${{ !cancelled() && needs.report.result == 'success' && github.ref == 'refs/heads/main' && github.event.repository.private == false }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # No es fatal: hasta activar Pages (Settings > Pages > Source: GitHub Actions) el despliegue no puede funcionar.
+      - id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
